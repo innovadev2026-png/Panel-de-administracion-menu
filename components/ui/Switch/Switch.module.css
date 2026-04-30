@@ -1,0 +1,29 @@
+/* /components/ui/Switch/Switch.module.css */
+.switch {
+  width: 42px;
+  height: 22px;
+  background: var(--border);
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  border: none;
+}
+
+.thumb {
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: all 0.2s ease;
+}
+
+.active {
+  background: var(--accent);
+}
+
+.active .thumb {
+  left: 22px;
+}

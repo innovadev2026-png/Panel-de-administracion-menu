@@ -1,0 +1,33 @@
+/* /components/ui/Pagination/Pagination.module.css */
+.wrapper {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.button {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.active {
+  background: var(--accent);
+  color: black;
+  border-color: var(--accent);
+}

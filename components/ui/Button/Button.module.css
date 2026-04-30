@@ -1,0 +1,106 @@
+/* /components/ui/Button/Button.module.css */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: var(--text-sm);
+}
+
+/* ===== Variants ===== */
+
+.primary {
+  background: var(--accent);
+  color: #000;
+}
+
+.primary:hover {
+  opacity: 0.9;
+}
+
+.secondary {
+  background: var(--card);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.secondary:hover {
+  border-color: var(--accent);
+}
+
+.outline {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.outline:hover {
+  border-color: var(--accent);
+}
+
+.danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* ===== Sizes ===== */
+
+.sm {
+  height: 30px;
+  padding: 0 10px;
+}
+
+.md {
+  height: 36px;
+  padding: 0 14px;
+}
+
+.lg {
+  height: 42px;
+  padding: 0 18px;
+}
+
+/* ===== States ===== */
+
+.fullWidth {
+  width: 100%;
+}
+
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== Icon ===== */
+
+.icon {
+  display: flex;
+  align-items: center;
+}
+
+/* ===== Loader ===== */
+
+.loader {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top: 2px solid var(--text);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

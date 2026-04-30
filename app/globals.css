@@ -1,0 +1,172 @@
+/* =========================
+   RESET BÁSICO
+========================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+    sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* =========================
+   VARIABLES (THEME BASE)
+========================= */
+:root {
+  /* colores base */
+  --bg: #080807;
+  --card: #1a1a1a;
+  --text: #ffffff;
+  --muted: #aaaaaa;
+
+  /* marca */
+  --primary: #111111;
+  --accent: #00f510;
+
+  /* estados */
+  --success: #00f510;
+  --warning: #ffc800;
+  --danger: #ff4d4f;
+
+  /* bordes */
+  --border: #222222;
+
+  /* radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 20px;
+  --space-xl: 32px;
+
+  /* sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+  /* tipografía */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+}
+
+/* =========================
+   SCROLLBAR (opcional)
+========================= */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+
+/* =========================
+   UTILIDADES
+========================= */
+
+/* layout */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* spacing */
+.gap-sm {
+  gap: var(--space-sm);
+}
+
+.gap-md {
+  gap: var(--space-md);
+}
+
+.gap-lg {
+  gap: var(--space-lg);
+}
+
+/* text */
+.text-muted {
+  color: var(--muted);
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* card base */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* hover */
+.hover {
+  transition: 0.2s ease;
+}
+
+.hover:hover {
+  opacity: 0.85;
+}
+
+/* =========================
+   TRANSICIONES GLOBALES
+========================= */
+a,
+button {
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+/* =========================
+   FOCUS (accesibilidad)
+========================= */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

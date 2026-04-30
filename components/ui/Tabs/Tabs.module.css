@@ -1,0 +1,33 @@
+/* /components/ui/Tabs/Tabs.module.css */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.active {
+  color: var(--text);
+  border-bottom: 2px solid var(--accent);
+}
+
+.content {
+  padding-top: 10px;
+}

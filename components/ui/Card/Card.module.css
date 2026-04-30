@@ -1,0 +1,74 @@
+/* /components/ui/Card/Card.module.css */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.15s ease;
+}
+
+/* ===== Padding ===== */
+
+.none {
+  padding: 0;
+}
+
+.sm {
+  padding: var(--space-sm);
+}
+
+.md {
+  padding: var(--space-md);
+}
+
+.lg {
+  padding: var(--space-lg);
+}
+
+/* ===== Hover ===== */
+
+.hover:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* ===== Clickable ===== */
+
+.clickable {
+  cursor: pointer;
+}
+
+/* ===== Sections ===== */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: var(--text-lg);
+  color: var(--text);
+}
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

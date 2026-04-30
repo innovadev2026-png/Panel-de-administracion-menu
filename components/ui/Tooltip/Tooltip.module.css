@@ -1,0 +1,21 @@
+/* /components/ui/Tooltip/Tooltip.module.css */
+.wrapper {
+  position: relative;
+  display: inline-block;
+  
+}
+
+.tooltip {
+  /* background-color: aqua; */
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 100;
+}

@@ -1,0 +1,40 @@
+/* /components/ui/Dropdown/Dropdown.module.css */
+.wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 110%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-width: 160px;
+  z-index: 100;
+}
+
+.trigger {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.item {
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}

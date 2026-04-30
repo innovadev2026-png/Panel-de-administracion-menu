@@ -1,0 +1,27 @@
+/* /components/ui/Badge/Badge.module.css */
+.badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.default {
+  background: var(--border);
+  color: var(--text);
+}
+
+.success {
+  background: rgba(0, 245, 16, 0.15);
+  color: #00f510;
+}
+
+.warning {
+  background: rgba(255, 200, 0, 0.15);
+  color: #ffc800;
+}
+
+.danger {
+  background: rgba(255, 0, 0, 0.15);
+  color: red;
+}

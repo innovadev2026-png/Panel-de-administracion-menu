@@ -1,0 +1,35 @@
+/* /components/ui/Textarea/Textarea.module.css */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 6px;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.textarea:focus {
+  border-color: var(--accent);
+}
+
+.error {
+  border-color: red;
+}
+
+.message {
+  font-size: 11px;
+  color: red;
+}

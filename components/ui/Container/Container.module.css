@@ -1,0 +1,31 @@
+/* /components/ui/Container/Container.module.css */
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+/* ===== Fluid ===== */
+
+.fluid {
+  max-width: 100%;
+}
+
+/* ===== Padding ===== */
+
+.none {
+  padding: 0;
+}
+
+.sm {
+  padding: var(--space-sm);
+}
+
+.md {
+  padding: var(--space-md);
+}
+
+.lg {
+  padding: var(--space-lg);
+}

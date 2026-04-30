@@ -1,0 +1,43 @@
+/* /components/ui/Checkbox/Checkbox.module.css */
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.wrapper input {
+  display: none;
+}
+
+.box {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--card);
+  position: relative;
+}
+
+.wrapper input:checked + .box {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.wrapper input:checked + .box::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid black;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.label {
+  user-select: none;
+}

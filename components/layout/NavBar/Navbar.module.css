@@ -1,0 +1,47 @@
+/* /components/layout/Navbar/Navbar.module.css */
+
+.navbar {
+  height: 64px;
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-md);
+}
+
+/* ===== Left ===== */
+
+.left {
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ===== Right ===== */
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ===== User ===== */
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.name {
+  font-size: var(--text-sm);
+  color: var(--text);
+}
