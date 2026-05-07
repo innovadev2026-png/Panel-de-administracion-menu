@@ -1,13 +1,16 @@
 // /components/ui/Container/index.tsx
+
 import styles from "./Container.module.css";
-import { ReactNode } from "react";
+import { ReactNode, CSSProperties } from "react";
 
 type Props = {
   children: ReactNode;
   fluid?: boolean;
   padding?: "none" | "sm" | "md" | "lg";
   className?: string;
-  maxWidth?: number; // opcional override
+  maxWidth?: number;
+  center?: boolean; // ✅ agregado
+  style?: CSSProperties;
 };
 
 export default function Container({
@@ -16,20 +19,26 @@ export default function Container({
   padding = "md",
   className = "",
   maxWidth,
+  center = false,
+  style,
 }: Props) {
   const classes = [
     styles.container,
     fluid ? styles.fluid : "",
     styles[padding],
+    center ? styles.center : "", // ✅ agregado
     className,
   ].join(" ");
 
-  const style = !fluid && maxWidth
-    ? { maxWidth: `${maxWidth}px` }
-    : undefined;
+  const dynamicStyle = {
+    ...(maxWidth && !fluid
+      ? { maxWidth: `${maxWidth}px` }
+      : {}),
+    ...style,
+  };
 
   return (
-    <div className={classes} style={style}>
+    <div className={classes} style={dynamicStyle}>
       {children}
     </div>
   );

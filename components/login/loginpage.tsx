@@ -85,7 +85,7 @@ export default function LoginPage() {
 
   return (
     <Container center maxWidth={350}>
-      <Card padding="lg" style={{ width: 380 }}>
+      <Card padding="lg">
         
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <h1 style={{ fontSize: 22, fontWeight: 600 }}>

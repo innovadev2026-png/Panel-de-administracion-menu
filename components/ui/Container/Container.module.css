@@ -29,3 +29,11 @@
 .lg {
   padding: var(--space-lg);
 }
+/* /components/ui/Container/Container.module.css */
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}

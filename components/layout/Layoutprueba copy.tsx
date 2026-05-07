@@ -13,6 +13,15 @@ type Props = {
   children: ReactNode;
 };
 
+type Restaurant = {
+  name?: string;
+};
+
+type User = {
+  name?: string;
+  image?: string;
+  role?: string;
+};
 const menu: MenuGroup[] = [
   {
     label: "General",
@@ -36,8 +45,8 @@ const menu: MenuGroup[] = [
 ];
 
 export default function Layout({ children }: Props) {
-  const [dataRestaurant, setDataRestaurant] = useState({})
-  const [dataUser, setDataUser] = useState({})
+  const [dataRestaurant, setDataRestaurant] = useState<Restaurant>({})
+  const [dataUser, setDataUser] = useState<User>({})
 
   useEffect(() => {
     const data = async () => {
@@ -72,8 +81,8 @@ export default function Layout({ children }: Props) {
         <Navbar
           title="Panel de Control"
           user={{
-            name: dataUser.name,
-            avatar: dataUser.image,
+            name: dataUser?.name || "nombre de usuario",
+            avatar: dataUser?.image,
           }}
           onLogout={logout}
         />
