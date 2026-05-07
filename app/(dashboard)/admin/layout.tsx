@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Layout from "@/components/layout/Layoutprueba copy";
 
 
 export default function AdminLayout({
@@ -11,8 +12,10 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  // const [dataRestaurant, setDataRestaurant] = useState({})
 
   useEffect(() => {
+    
     const verify = async () => {
       try {
         const res = await fetch("/api/auth/verify");
@@ -33,5 +36,5 @@ export default function AdminLayout({
 
   if (loading) return <div>Cargando...</div>;
 
-  return <>{children}</>;
+  return <Layout>{children}</Layout>;
 }

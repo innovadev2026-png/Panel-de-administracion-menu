@@ -1,7 +1,7 @@
 // /components/layout/Layout/index.tsx
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import styles from "./Layout.module.css";
 import Sidebar, { MenuGroup } from "@/components/layout/Sidebar/Sidebar";
 import Navbar from "@/components/layout/NavBar/NavBar";
@@ -36,11 +36,34 @@ const menu: MenuGroup[] = [
 ];
 
 export default function Layout({ children }: Props) {
+  const [dataRestaurant, setDataRestaurant] = useState({})
+  const [dataUser, setDataUser] = useState({})
+
+  useEffect(() => {
+    const data = async () => {
+      try {
+        const res = await fetch("/api/restaurants/consult")
+        const data = await res.json()
+        const firstKey = Object.keys(data)[0];
+        setDataRestaurant(data[firstKey])
+        const userRes = await fetch("/api/auth/user")
+        const datauser = await userRes.json()
+        setDataUser(datauser.data)
+
+        // console.log("esto es datauser", datauser)
+      } catch {
+        return
+      }
+    }
+    data()
+  },[])
+
+  // console.log(dataUser)
   return (
     <div className={styles.layout}>
       
       {/* Sidebar */}
-      <Sidebar menu={menu} nameEmpresa="hp"/>
+      <Sidebar menu={menu} nameEmpresa={dataRestaurant?.name} role={dataUser?.role}/>
 
       {/* Main area */}
       <div className={styles.main}>
@@ -49,8 +72,8 @@ export default function Layout({ children }: Props) {
         <Navbar
           title="Panel de Control"
           user={{
-            name: "Carlos",
-            avatar: "https://i.pravatar.cc/40",
+            name: dataUser.name,
+            avatar: dataUser.image,
           }}
           onLogout={logout}
         />

@@ -32,7 +32,7 @@ export default function AdminLayout({
 }) {
   return (
     <>
-      <Sidebar menu={menu} />
+      <Sidebar menu={menu} nameEmpresa="hp"/>
       <NavBar onLogout={logout}/>
     </>
     

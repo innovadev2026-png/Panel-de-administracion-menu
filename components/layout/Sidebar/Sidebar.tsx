@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button/Button";
 import Tooltip from "@/components/ui/Tooltip/Tooltip";
 import { Alert } from "@/components/ui/Alert/Alert";
 import Grid from "@/components/ui/Grid/Grid";
+import { title } from "process";
 
 
 export type MenuItem = {
@@ -27,12 +28,15 @@ type Props = {
   menu: MenuGroup[];
   title?: string;
   role?: string; // Para mostrar en el header y/o controlar acceso
+  nameEmpresa?: string;
   onLogout?: () => void; // Función de logout opcional
 };
 
 export default function Sidebar({
   menu,
   role = "SuperAdmin",
+  nameEmpresa = "nombre de empresa",
+
   onLogout,
 }: Props) {
   const pathname = usePathname();
@@ -41,9 +45,10 @@ export default function Sidebar({
   const isActive = (path: string) => {
     return pathname === path || pathname.startsWith(path + "/");
   };
+  // console.log("esto es nameEmpresa", nameEmpresa)
 
   // 🔹 fallback icon (primera letra)
-  const getFallbackIcon = (name: string) =>
+  const getFallbackIcon = (name: string) => 
     name.charAt(0).toUpperCase();
 
   return (
@@ -55,7 +60,7 @@ export default function Sidebar({
       {/* Header */}
       <div className={styles.header}>
         <span className={styles.logo}>
-          {collapsed ? role.slice(0, 2) : role}
+          {collapsed ? nameEmpresa.slice(0, 2) : nameEmpresa}
         </span>
 
         <button
