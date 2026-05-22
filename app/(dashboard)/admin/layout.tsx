@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Layout from "@/components/layout/Layoutprueba copy";
+import Layout from "@/components/layout/LayoutDashboard";
 
 
 export default function AdminLayout({

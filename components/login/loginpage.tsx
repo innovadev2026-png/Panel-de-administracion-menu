@@ -49,8 +49,9 @@ export default function LoginPage() {
       }
 
       const data = userSnap.data();
+      console.log(data)
 
-      if (data.role !== "superadmin") {
+      if (data.role !== "SuperAdmin") {
         throw new Error("No autorizado");
       }
 

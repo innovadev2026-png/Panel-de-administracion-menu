@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
     const userDoc = await adminDb.collection("users").doc(uid).get();
 
-    if (!userDoc.exists || userDoc.data()?.role !== "superadmin") {
+    if (!userDoc.exists || userDoc.data()?.role !== "SuperAdmin") {
       return Response.json({ ok: false }, { status: 403 });
     }
 
