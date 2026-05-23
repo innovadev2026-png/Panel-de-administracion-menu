@@ -1,31 +1,116 @@
-/* /components/ui/Modal/Modal.module.css */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+
+  background: rgba(0, 0, 0, 0.75);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-}
 
-.modal {
-  background: var(--card);
-  border-radius: 10px;
-  width: 100%;
-  max-width: 500px;
   padding: 20px;
-  border: 1px solid var(--border);
+
+  z-index: 1000;
+
+  backdrop-filter: blur(4px);
 }
 
-.title {
-  margin-bottom: 10px;
-  font-size: 18px;
-  color: var(--accent);
-}
+/* modal */
+.modal {
+  width: 100%;
 
-.content {
+  background: var(--card);
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
   display: flex;
   flex-direction: column;
-  gap: 12px;
+
+  max-height: 90vh;
+
+  animation: modalIn 0.2s ease;
+}
+
+/* tamaños */
+.sm {
+  max-width: 400px;
+}
+
+.md {
+  max-width: 550px;
+}
+
+.lg {
+  max-width: 750px;
+}
+
+.xl {
+  max-width: 1000px;
+}
+
+/* header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* título */
+.title {
+  font-size: 1rem;
+  color: var(--text);
+}
+
+/* botón cerrar */
+.close {
+  border: none;
+  background: transparent;
+
+  color: var(--muted);
+
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+/* contenido */
+.content {
+  padding: 20px;
+
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* scroll */
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+}
+
+/* animación */
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

@@ -1,0 +1,72 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* label */
+.label {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+/* grupo */
+.inputGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* color picker */
+.color {
+  width: 48px;
+  height: 48px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: transparent;
+  cursor: pointer;
+
+  overflow: hidden;
+}
+
+/* remove default */
+.color::-webkit-color-swatch {
+  border: none;
+  border-radius: 12px;
+}
+
+.color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+/* input hex */
+.text {
+  flex: 1;
+
+  height: 48px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: var(--card);
+
+  color: var(--text);
+
+  padding: 0 12px;
+
+  font-size: 0.9rem;
+
+  outline: none;
+}
+
+/* error */
+.error {
+  border: 1px solid #ff4d4f;
+}
+
+.message {
+  color: #ff4d4f;
+  font-size: 0.75rem;
+}

@@ -3,15 +3,25 @@
 import { useEffect, useState } from "react";
 import styles from "./restaurants.module.css";
 import { adminDb } from "@/lib/firebaseAdmin";
+import Input from "@/components/ui/Input/Input";
+import Textarea from "@/components/ui/Textarea/Textarea";
+import Button from "@/components/ui/Button/Button";
+import Card from "@/components/ui/Card/Card";
+import Avatar from "@/components/ui/Avatar/Avatar";
+import ColorInput from "@/components/ui/ColorInput/ColorInput";
+import Grid from "@/components/ui/Grid/Grid";
+import Modal from "@/components/ui/Modal/Modal";
 
 type Restaurant = {
   id: string;
   name: string;
-  status?: string;
+  isActive?: boolean;
   description?: string;
   phone?: string;
   address?: string;
   createdAt?: any;
+  logo?: string;
+  coverImage?: string;
 };
 
 
@@ -34,9 +44,9 @@ export default function RestaurantsPage() {
         const data = await res.json();
 
         // const subcollection = await getSubcollectionsOfCollection("restaurants");
-        console.log(data);
+        // console.log(data);
     }
-
+    console.log("esto es form:", form);
     subcolecion()
     const handleChange = (field: string, value: any) => {
         setForm((prev: any) => ({
@@ -107,119 +117,238 @@ export default function RestaurantsPage() {
 
       {/* CREAR */}
       <div className={styles.form}>
-        <input
+        <Input
+          label="Nombre"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nombre del restaurante"
-          className={styles.input}
         />
-        <button onClick={createRestaurant} className={styles.button}>
+        {/*  */}
+        <Button onClick={createRestaurant}>
           Crear
-        </button>
+        </Button>
       </div>
 
       {/* LISTA */}
       <div className={styles.list}>
+        <Grid minWidth={300}>
         {restaurants.map((r) => (
-          <div
+          <Card 
             key={r.id}
-            className={styles.card}
-            // onClick={() => setSelected(r)}
+            title={r.name}
+            description={`Creado: ${formatDate(r.createdAt)} - Estado: ${r.isActive ? "Activo" : "Inactivo"}`}
+            backgroundImage={r.coverImage}
             onClick={() => openModal(r)}
-          >
-            <h3>{r.name}</h3>
-            <span>{r.status}</span>
-          </div>
+            >
+              {/* {console.log("restaurante:", r)} */}
+            <Avatar name={r.name} src={r.logo} size={150}/>
+          
+            <h3>{r.address}</h3>
+          </Card>
         ))}
+        </Grid>
       </div>
 
       {/* MODAL */}
-      {selected && form && (
-        <div className={styles.modalOverlay} onClick={() => setSelected(null)}>
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2>Editar Restaurante</h2>
+<Modal
+  isOpen={!!selected && !!form}
+  onClose={() => setSelected(null)}
+  title="Editar Restaurante"
+  size="lg"
+>
+  <Input
+    label="Nombre"
+    value={form?.name || ""}
+    onChange={(e: any) =>
+      handleChange("name", e.target.value)
+    }
+  />
 
-            <input
-                value={form.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                className={styles.input}
-                placeholder="Nombre"
-            />
+  <Input
+    label="Dirección"
+    value={form?.address || ""}
+    onChange={(e: any) =>
+      handleChange("address", e.target.value)
+    }
+  />
 
-            <input
-                value={form.address || ""}
-                onChange={(e) => handleChange("address", e.target.value)}
-                className={styles.input}
-                placeholder="Dirección"
-            />
+  <Input
+    label="Teléfono"
+    value={form?.phone || ""}
+    onChange={(e: any) =>
+      handleChange("phone", e.target.value)
+    }
+    placeholder="Teléfono"
+  />
 
-            <input
-                value={form.phone || ""}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                className={styles.input}
-                placeholder="Teléfono"
-            />
+  <Textarea
+    label="Descripción"
+    value={form?.description || ""}
+    onChange={(e) =>
+      handleChange("description", e.target.value)
+    }
+    placeholder="Descripción"
+  />
 
-            <textarea
-                value={form.description || ""}
-                onChange={(e) => handleChange("description", e.target.value)}
-                className={styles.textarea}
-                placeholder="Descripción"
-            />
+  {/* COLORES */}
+  <div className={styles.colors}>
 
-            {/* COLORES */}
-            <div className={styles.colors}>
-                <input
-                type="color"
-                value={form.settings?.colors?.bg}
-                onChange={(e) =>
-                    setForm((prev: any) => ({
-                    ...prev,
-                    settings: {
-                        ...prev.settings,
-                        colors: {
-                        ...prev.settings.colors,
-                        bg: e.target.value,
-                        },
-                    },
-                    }))
-                }
-                />
-                <input
-                type="color"
-                value={form.settings?.colors?.accent}
-                onChange={(e) =>
-                    setForm((prev: any) => ({
-                    ...prev,
-                    settings: {
-                        ...prev.settings,
-                        colors: {
-                        ...prev.settings.colors,
-                        accent: e.target.value,
-                        },
-                    },
-                    }))
-                }
-                />
-            </div>
+    <Grid minWidth={250}>
 
-            <div className={styles.actions}>
-                <button onClick={handleSave} className={styles.save}>
-                Guardar
-                </button>
+      <ColorInput
+        label="Color de fondo"
+        value={form?.settings?.colors?.bg || "#000000"}
+        onChange={(value) =>
+          setForm((prev: any) => ({
+            ...prev,
+            settings: {
+              ...prev.settings,
+              colors: {
+                ...prev.settings.colors,
+                bg: value,
+              },
+            },
+          }))
+        }
+      />
 
-                <button
-                onClick={() =>
-                    toggleStatus(form.id, form.status || "active")
-                }
-                className={styles.toggle}
-                >
-                {form.status === "active" ? "Deshabilitar" : "Activar"}
-                </button>
-            </div>
-            </div>
-        </div>
-)}
+      <ColorInput
+        label="Color primario"
+        value={form?.settings?.colors?.primary || "#000000"}
+        onChange={(value) =>
+          setForm((prev: any) => ({
+            ...prev,
+            settings: {
+              ...prev.settings,
+              colors: {
+                ...prev.settings.colors,
+                primary: value,
+              },
+            },
+          }))
+        }
+      />
+
+      <ColorInput
+        label="Color secundario"
+        value={form?.settings?.colors?.secondary || "#000000"}
+        onChange={(value) =>
+          setForm((prev: any) => ({
+            ...prev,
+            settings: {
+              ...prev.settings,
+              colors: {
+                ...prev.settings.colors,
+                secondary: value,
+              },
+            },
+          }))
+        }
+      />
+
+      <ColorInput
+        label="Color de texto"
+        value={form?.settings?.colors?.text || "#ffffff"}
+        onChange={(value) =>
+          setForm((prev: any) => ({
+            ...prev,
+            settings: {
+              ...prev.settings,
+              colors: {
+                ...prev.settings.colors,
+                text: value,
+              },
+            },
+          }))
+        }
+      />
+
+      <ColorInput
+        label="Color de resaltado"
+        value={form?.settings?.colors?.accent || "#00c853"}
+        onChange={(value) =>
+          setForm((prev: any) => ({
+            ...prev,
+            settings: {
+              ...prev.settings,
+              colors: {
+                ...prev.settings.colors,
+                accent: value,
+              },
+            },
+          }))
+        }
+      />
+
+      <ColorInput
+        label="Color de tarjetas"
+        value={form?.settings?.colors?.card || "#1a1a1a"}
+        onChange={(value) =>
+          setForm((prev: any) => ({
+            ...prev,
+            settings: {
+              ...prev.settings,
+              colors: {
+                ...prev.settings.colors,
+                card: value,
+              },
+            },
+          }))
+        }
+      />
+
+      <ColorInput
+        label="Color de pasivos"
+        value={form?.settings?.colors?.muted || "#aaaaaa"}
+        onChange={(value) =>
+          setForm((prev: any) => ({
+            ...prev,
+            settings: {
+              ...prev.settings,
+              colors: {
+                ...prev.settings.colors,
+                muted: value,
+              },
+            },
+          }))
+        }
+      />
+
+    </Grid>
+
+  </div>
+
+  {/* ACTIONS */}
+  <div className={styles.actions}>
+
+    <Button onClick={handleSave}>
+      Guardar
+    </Button>
+
+    <Button
+      onClick={() => setSelected(null)}
+      variant="secondary"
+    >
+      Cancelar
+    </Button>
+
+    <Button
+      onClick={() =>
+        toggleStatus(
+          form.id,
+          form.isActive || "active"
+        )
+      }
+    >
+      {form?.isActive
+        ? "Deshabilitar"
+        : "Activar"}
+    </Button>
+
+  </div>
+
+</Modal>
+
     </div>
   );
 }

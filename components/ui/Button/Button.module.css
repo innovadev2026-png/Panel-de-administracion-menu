@@ -10,6 +10,7 @@
   cursor: pointer;
   transition: all 0.15s ease;
   font-size: var(--text-sm);
+  margin: 10px;
 }
 
 /* ===== Variants ===== */
