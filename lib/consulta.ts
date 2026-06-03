@@ -1,32 +1,45 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 
+type CollectionWithSubcollections = Record<
+  string,
+  FirebaseFirestore.DocumentData & {
+    subcollections: Record<string, FirebaseFirestore.DocumentData[]>;
+  }
+>;
+
 export const getCollectionWithSubcollections = async (
   collectionName: string
 ) => {
-  const result: any = {};
-
   const snapshot = await adminDb.collection(collectionName).get();
 
-  for (const doc of snapshot.docs) {
-    const docData = doc.data();
+  const entries = await Promise.all(
+    snapshot.docs.map(async (doc) => {
+      const docData = doc.data();
+      const subcollections = await doc.ref.listCollections();
 
-    result[doc.id] = {
-      ...docData,
-      subcollections: {},
-    };
+      const subcollectionEntries = await Promise.all(
+        subcollections.map(async (sub) => {
+          const subSnap = await sub.get();
 
-    // listar subcolecciones del documento
-    const subcollections = await doc.ref.listCollections();
+          return [
+            sub.id,
+            subSnap.docs.map((subDoc) => ({
+              id: subDoc.id,
+              ...subDoc.data(),
+            })),
+          ] as const;
+        })
+      );
 
-    for (const sub of subcollections) {
-      const subSnap = await sub.get();
+      return [
+        doc.id,
+        {
+          ...docData,
+          subcollections: Object.fromEntries(subcollectionEntries),
+        },
+      ] as const;
+    })
+  );
 
-      result[doc.id].subcollections[sub.id] = subSnap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
-    }
-  }
-
-  return result;
+  return Object.fromEntries(entries) as CollectionWithSubcollections;
 };

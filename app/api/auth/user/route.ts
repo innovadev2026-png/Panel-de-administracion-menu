@@ -1,33 +1,11 @@
-// /app/api/me/route.ts
+import { NextRequest } from "next/server";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
 
-import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
-
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
-    // ===== Token =====
-    const cookie = req.headers.get("cookie") || "";
-
-    const token = cookie
-      .split("; ")
-      .find((c) => c.startsWith("token="))
-      ?.split("=")[1];
-
-    if (!token) {
-      return Response.json(
-        { ok: false, error: "No autorizado" },
-        { status: 401 }
-      );
-    }
-
-    // ===== Verify Token =====
-    const decoded = await adminAuth.verifyIdToken(token);
-
-    const uid = decoded.uid;
-
-    // ===== Get User =====
-    const docRef = adminDb.collection("users").doc(uid);
-
-    const docSnap = await docRef.get();
+    const { uid } = await requireSuperAdmin(req);
+    const docSnap = await adminDb.collection("users").doc(uid).get();
 
     if (!docSnap.exists) {
       return Response.json(
@@ -36,25 +14,12 @@ export async function GET(req: Request) {
       );
     }
 
-    // ===== Data =====
-    const data = docSnap.data();
-
-    // ===== Response =====
     return Response.json({
       ok: true,
       uid,
-      data,
+      data: docSnap.data(),
     });
-
-  } catch (error: any) {
-    console.error(error);
-
-    return Response.json(
-      {
-        ok: false,
-        error: error.message || "Error interno",
-      },
-      { status: 500 }
-    );
+  } catch (error) {
+    return authErrorResponse(error);
   }
 }

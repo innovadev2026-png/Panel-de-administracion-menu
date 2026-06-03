@@ -1,32 +1,28 @@
 "use client";
 
+import type { FirebaseError } from "firebase/app";
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebaseClient";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-
-// UI
+import { auth } from "@/lib/firebaseClient";
 import Card from "@/components/ui/Card/Card";
 import Input from "@/components/ui/Input/Input";
 import Button from "@/components/ui/Button/Button";
 import { Alert } from "@/components/ui/Alert/Alert";
-import Spinner from "@/components/ui/Spinner/Spinner";
 import Container from "@/components/ui/Container/Container";
 
 const db = getFirestore();
 
 export default function LoginPage() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     if (!email || !password) {
       setError("Completa todos los campos");
@@ -38,10 +34,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await signInWithEmailAndPassword(auth, email, password);
-      const uid = res.user.uid;
-
-      const userRef = doc(db, "users", uid);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      const userRef = doc(db, "users", result.user.uid);
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
@@ -49,32 +43,32 @@ export default function LoginPage() {
       }
 
       const data = userSnap.data();
-      console.log(data)
 
       if (data.role !== "SuperAdmin") {
         throw new Error("No autorizado");
       }
 
-      const token = await res.user.getIdToken();
+      const token = await result.user.getIdToken();
+      const secure = window.location.protocol === "https:" ? "; secure" : "";
 
-      document.cookie = `token=${token}; path=/; max-age=3600; samesite=strict`;
-
+      document.cookie = `token=${token}; path=/; max-age=3600; samesite=strict${secure}`;
       router.push("/admin");
-    } catch (err: any) {
-      let message = "Error al iniciar sesión";
+    } catch (err) {
+      const firebaseError = err as Partial<FirebaseError>;
+      let message = "Error al iniciar sesion";
 
-      switch (err.code) {
+      switch (firebaseError.code) {
         case "auth/user-not-found":
           message = "Usuario no existe";
           break;
         case "auth/wrong-password":
-          message = "Contraseña incorrecta";
+          message = "Contrasena incorrecta";
           break;
         case "auth/invalid-email":
-          message = "Correo inválido";
+          message = "Correo invalido";
           break;
         default:
-          message = err.message || message;
+          message = err instanceof Error ? err.message : message;
       }
 
       setError(message);
@@ -87,36 +81,28 @@ export default function LoginPage() {
   return (
     <Container center maxWidth={350}>
       <Card padding="lg">
-        
         <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 600 }}>
-            SuperAdmin
-          </h1>
+          <h1 style={{ fontSize: 22, fontWeight: 600 }}>SuperAdmin</h1>
         </div>
 
         <form onSubmit={handleLogin}>
-          
           <Input
             label="Correo"
             type="email"
             value={email}
-            onChange={(e: any) => setEmail(e.target.value)}
+            onChange={(event) => setEmail(event.target.value)}
             error={error && !email ? "Requerido" : ""}
           />
 
           <Input
-            label="Contraseña"
+            label="Contrasena"
             type="password"
             value={password}
-            onChange={(e: any) => setPassword(e.target.value)}
+            onChange={(event) => setPassword(event.target.value)}
             error={error && !password ? "Requerido" : ""}
           />
 
-          <Button
-            type="submit"
-            fullWidth
-            loading={loading}
-          >
+          <Button type="submit" fullWidth loading={loading}>
             Ingresar
           </Button>
         </form>

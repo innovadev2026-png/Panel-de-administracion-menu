@@ -51,15 +51,18 @@ export default function Layout({ children }: Props) {
   useEffect(() => {
     const data = async () => {
       try {
-        const res = await fetch("/api/restaurants/consult")
-        const data = await res.json()
-        const firstKey = Object.keys(data)[0];
-        setDataRestaurant(data[firstKey])
-        const userRes = await fetch("/api/auth/user")
-        const datauser = await userRes.json()
-        setDataUser(datauser.data)
+        const [restaurantRes, userRes] = await Promise.all([
+          fetch("/api/restaurants/list"),
+          fetch("/api/auth/user"),
+        ]);
 
-        // console.log("esto es datauser", datauser)
+        if (!restaurantRes.ok || !userRes.ok) return;
+
+        const restaurants = await restaurantRes.json();
+        const user = await userRes.json();
+
+        setDataRestaurant(restaurants[0] ?? {});
+        setDataUser(user.data ?? {});
       } catch {
         return
       }

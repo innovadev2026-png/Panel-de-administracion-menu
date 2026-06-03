@@ -32,7 +32,7 @@ export default function AdminLayout({
     };
 
     verify();
-  }, []);
+  }, [router]);
 
   if (loading) return <div>Cargando...</div>;
 

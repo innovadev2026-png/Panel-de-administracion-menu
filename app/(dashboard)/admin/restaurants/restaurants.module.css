@@ -19,17 +19,51 @@
   font-weight: bold;
 }
 
+.button:disabled,
+.save:disabled,
+.toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 15px;
 }
 
 .card {
   background: #1a1a1a;
+  border: 1px solid #303030;
+  color: #fff;
+  cursor: pointer;
   padding: 16px;
-  border-radius: 10px;
+  border-radius: 8px;
+  text-align: left;
 }
+
+.card:hover,
+.card:focus-visible {
+  border-color: #00c853;
+  outline: none;
+}
+
+.card h3 {
+  margin: 0 0 8px;
+}
+
+.card span,
+.card small {
+  color: #bdbdbd;
+  display: block;
+  margin-top: 4px;
+}
+
+.error {
+  color: #ff8a80;
+  margin: 0;
+}
+
 .form {
   display: flex;
   gap: 10px;
@@ -58,8 +92,8 @@
 .modal {
   background: #1a1a1a;
   padding: 24px;
-  border-radius: 12px;
-  width: 400px;
+  border-radius: 8px;
+  width: min(400px, calc(100vw - 32px));
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -99,4 +133,11 @@
   padding: 10px;
   border-radius: 8px;
   cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .form,
+  .actions {
+    flex-direction: column;
+  }
 }

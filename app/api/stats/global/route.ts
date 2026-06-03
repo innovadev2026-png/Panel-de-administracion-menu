@@ -1,24 +1,37 @@
+import { NextRequest } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
+import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
 
-export async function GET() {
-  const usersSnap = await adminDb.collection("users").get();
-  const restaurantsSnap = await adminDb.collection("restaurants").get();
+async function getCount(query: FirebaseFirestore.Query) {
+  const snapshot = await query.count().get();
+  return snapshot.data().count;
+}
 
-  const totalUsers = usersSnap.size;
-  const totalRestaurants = restaurantsSnap.size;
+export async function GET(req: NextRequest) {
+  try {
+    await requireSuperAdmin(req);
 
-  const activeRestaurants = restaurantsSnap.docs.filter(
-    (doc) => doc.data().status === "active"
-  ).length;
+    const [
+      totalUsers,
+      totalRestaurants,
+      activeRestaurants,
+      disabledRestaurants,
+    ] = await Promise.all([
+      getCount(adminDb.collection("users")),
+      getCount(adminDb.collection("restaurants")),
+      getCount(adminDb.collection("restaurants").where("status", "==", "active")),
+      getCount(
+        adminDb.collection("restaurants").where("status", "==", "disabled")
+      ),
+    ]);
 
-  const disabledRestaurants = restaurantsSnap.docs.filter(
-    (doc) => doc.data().status === "disabled"
-  ).length;
-
-  return Response.json({
-    totalUsers,
-    totalRestaurants,
-    activeRestaurants,
-    disabledRestaurants,
-  });
+    return Response.json({
+      totalUsers,
+      totalRestaurants,
+      activeRestaurants,
+      disabledRestaurants,
+    });
+  } catch (error) {
+    return authErrorResponse(error);
+  }
 }

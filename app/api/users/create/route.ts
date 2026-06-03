@@ -1,170 +1,106 @@
-// /app/api/users/create/route.ts
-
-import { adminDb, bucket } from "@/lib/firebaseAdmin";
+import { NextRequest } from "next/server";
 import admin from "firebase-admin";
+import { adminDb, bucket } from "@/lib/firebaseAdmin";
+import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
 
-import { v4 as uuidv4 } from "uuid";
+type FirebaseError = Error & {
+  code?: string;
+};
 
-export async function POST(req: Request) {
+function getFormString(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function isFirebaseError(error: unknown): error is FirebaseError {
+  return error instanceof Error;
+}
+
+function getFileExtension(fileName: string) {
+  return fileName.split(".").pop() || "jpg";
+}
+
+async function uploadUserImage(uid: string, file: File | null) {
+  if (!file || file.size === 0) {
+    return "/images/avatar-placeholder.png";
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const extension = getFileExtension(file.name);
+  const fileName = `users/${uid}/${uid}.${extension}`;
+  const storageFile = bucket.file(fileName);
+
+  await storageFile.save(buffer, {
+    metadata: {
+      contentType: file.type,
+    },
+    public: true,
+  });
+
+  return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+}
+
+export async function POST(req: NextRequest) {
   try {
+    await requireSuperAdmin(req);
 
-    /* FORM DATA */
     const formData = await req.formData();
+    const name = getFormString(formData, "name");
+    const email = getFormString(formData, "email");
+    const password = getFormString(formData, "password");
+    const role = getFormString(formData, "role") || "user";
+    const isActive = formData.get("isActive") === "true";
+    const file = formData.get("image") as File | null;
 
-    const name =
-      formData.get("name") as string;
-
-    const email =
-      formData.get("email") as string;
-
-    const password =
-      formData.get("password") as string;
-
-    const role =
-      formData.get("role") as string;
-
-    const isActive =
-      formData.get("isActive") === "true";
-
-    const file =
-      formData.get("image") as File | null;
-
-    /* VALIDATION */
     if (!name || !email || !password) {
       return Response.json(
-        {
-          ok: false,
-          error:
-            "Nombre, email y password son requeridos",
-        },
+        { ok: false, error: "Nombre, email y password son requeridos" },
         { status: 400 }
       );
     }
 
-    /* =========================
-       CREATE AUTH USER
-    ========================== */
-
-    const authUser =
-      await admin.auth().createUser({
-        displayName: name,
-        email,
-        password,
-        disabled: !isActive,
-      });
-
-    /* UID FIREBASE AUTH */
+    const authUser = await admin.auth().createUser({
+      displayName: name,
+      email,
+      password,
+      disabled: !isActive,
+    });
     const uid = authUser.uid;
-
-    /* =========================
-       IMAGE
-    ========================== */
-
-    let imageUrl =
-      "/images/avatar-placeholder.png";
-
-    if (file && file.size > 0) {
-
-      const bytes =
-        await file.arrayBuffer();
-
-      const buffer =
-        Buffer.from(bytes);
-
-      const extension =
-        file.name.split(".").pop();
-
-      const fileName =
-        `users/${uid}/${uid}.${extension}`;
-
-      const storageFile =
-        bucket.file(fileName);
-
-      await storageFile.save(buffer, {
-        metadata: {
-          contentType: file.type,
-        },
-        public: true,
-      });
-
-      imageUrl =
-        `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-    }
-
-    /* =========================
-       FIRESTORE USER
-    ========================== */
+    const imageUrl = await uploadUserImage(uid, file);
 
     const user = {
       id: uid,
-
       uid,
-
       name,
-
       email,
-
-      role: role || "user",
-
+      role,
       image: imageUrl,
-
       isActive,
-
-      createdAt:
-        admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    await adminDb
-      .collection("users")
-      .doc(uid)
-      .set(user);
-
-    /* =========================
-       CUSTOM CLAIMS
-    ========================== */
-
-    await admin.auth().setCustomUserClaims(
-      uid,
-      {
-        role: role || "user",
-      }
-    );
+    await Promise.all([
+      adminDb.collection("users").doc(uid).set(user),
+      admin.auth().setCustomUserClaims(uid, { role }),
+    ]);
 
     return Response.json({
       ok: true,
       user,
     });
+  } catch (error: unknown) {
+    console.error("CREATE USER ERROR:", error);
 
-  } catch (error: any) {
-
-    console.error(
-      "CREATE USER ERROR:",
-      error
-    );
-
-    /* FIREBASE AUTH ERRORS */
     if (
-      error.code ===
-      "auth/email-already-exists"
+      isFirebaseError(error) &&
+      error.code === "auth/email-already-exists"
     ) {
       return Response.json(
-        {
-          ok: false,
-          error:
-            "El correo ya está registrado",
-        },
+        { ok: false, error: "El correo ya esta registrado" },
         { status: 400 }
       );
     }
 
-    return Response.json(
-      {
-        ok: false,
-        error:
-          error.message ||
-          "Error creando usuario",
-      },
-      { status: 500 }
-    );
+    return authErrorResponse(error);
   }
 }

@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
-
 import { bucket } from "@/lib/firebaseAdmin";
-
+import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(req: NextRequest) {
   try {
+    await requireSuperAdmin(req);
 
     const formData = await req.formData();
 
@@ -54,14 +54,6 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
 
-    console.error("UPLOAD ERROR:", error);
-
-    return Response.json(
-      {
-        ok: false,
-        error: "Error subiendo archivo",
-      },
-      { status: 500 }
-    );
+    return authErrorResponse(error);
   }
 }

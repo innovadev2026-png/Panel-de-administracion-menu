@@ -2,7 +2,7 @@
 import styles from "./Table.module.css";
 
 type Column<T> = {
-  key: keyof T | string;
+  key: keyof T;
   label: string;
   render?: (row: T) => React.ReactNode;
 };
@@ -41,9 +41,7 @@ export default function Table<T extends { id: string }>({
               <tr key={row.id} className={styles.tr}>
                 {columns.map((col) => (
                   <td key={String(col.key)} className={styles.td}>
-                    {col.render
-                      ? col.render(row)
-                      : (row as any)[col.key]}
+                    {col.render ? col.render(row) : String(row[col.key] ?? "")}
                   </td>
                 ))}
               </tr>

@@ -1,4 +1,5 @@
 // /components/ui/Avatar/index.tsx
+import Image from "next/image";
 import styles from "./Avatar.module.css";
 
 type Props = {
@@ -10,10 +11,13 @@ type Props = {
 export default function Avatar({ src, name, size = 32 }: Props) {
   if (src) {
     return (
-      <img
+      <Image
         src={src}
         alt={name || "avatar"}
         className={styles.avatar}
+        width={size}
+        height={size}
+        unoptimized
         style={{ width: size, height: size }}
       />
     );

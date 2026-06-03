@@ -1,125 +1,61 @@
-// /app/api/users/delete/route.ts
-
-import { adminDb, bucket } from "@/lib/firebaseAdmin";
+import { NextRequest } from "next/server";
 import admin from "firebase-admin";
+import { adminDb, bucket } from "@/lib/firebaseAdmin";
+import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
 
-export async function DELETE(req: Request) {
+function logRejectedCleanup(label: string, result: PromiseSettledResult<unknown>) {
+  if (result.status === "rejected") {
+    console.error(label, result.reason);
+  }
+}
+
+async function deleteUserFiles(id: string) {
+  const [files] = await bucket.getFiles({
+    prefix: `users/${id}`,
+  });
+
+  await Promise.all(files.map((file) => file.delete()));
+}
+
+export async function DELETE(req: NextRequest) {
   try {
+    await requireSuperAdmin(req);
 
     const { id } = await req.json();
 
-    /* VALIDACIÓN */
     if (!id) {
       return Response.json(
-        {
-          ok: false,
-          error: "ID requerido",
-        },
+        { ok: false, error: "ID requerido" },
         { status: 400 }
       );
     }
 
-    /* =====================================
-       GET USER
-    ===================================== */
-
-    const userRef = adminDb
-      .collection("users")
-      .doc(id);
-
-    const userSnap =
-      await userRef.get();
+    const userRef = adminDb.collection("users").doc(id);
+    const userSnap = await userRef.get();
 
     if (!userSnap.exists) {
       return Response.json(
-        {
-          ok: false,
-          error: "Usuario no encontrado",
-        },
+        { ok: false, error: "Usuario no encontrado" },
         { status: 404 }
       );
     }
 
-    const user =
-      userSnap.data();
+    const [storageResult, authResult] = await Promise.allSettled([
+      deleteUserFiles(id),
+      admin.auth().deleteUser(id),
+    ]);
 
-    /* =====================================
-       DELETE IMAGE STORAGE
-    ===================================== */
-
-    try {
-
-      const files =
-        await bucket.getFiles({
-          prefix: `users/${id}`,
-        });
-
-      if (
-        files &&
-        files[0] &&
-        files[0].length > 0
-      ) {
-
-        await Promise.all(
-          files[0].map((file) =>
-            file.delete()
-          )
-        );
-      }
-
-    } catch (storageError) {
-
-      console.error(
-        "ERROR STORAGE:",
-        storageError
-      );
-    }
-
-    /* =====================================
-       DELETE AUTH
-    ===================================== */
-
-    try {
-
-      await admin
-        .auth()
-        .deleteUser(id);
-
-    } catch (authError) {
-
-      console.error(
-        "ERROR AUTH:",
-        authError
-      );
-    }
-
-    /* =====================================
-       DELETE FIRESTORE
-    ===================================== */
+    logRejectedCleanup("ERROR STORAGE:", storageResult);
+    logRejectedCleanup("ERROR AUTH:", authResult);
 
     await userRef.delete();
 
     return Response.json({
       ok: true,
-      message:
-        "Usuario eliminado correctamente",
+      message: "Usuario eliminado correctamente",
     });
-
-  } catch (error: any) {
-
-    console.error(
-      "DELETE USER ERROR:",
-      error
-    );
-
-    return Response.json(
-      {
-        ok: false,
-        error:
-          error.message ||
-          "Error eliminando usuario",
-      },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    console.error("DELETE USER ERROR:", error);
+    return authErrorResponse(error);
   }
 }

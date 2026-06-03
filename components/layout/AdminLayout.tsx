@@ -34,8 +34,7 @@ export default function AdminLayout({
     <>
       <Sidebar menu={menu} nameEmpresa="hp"/>
       <NavBar onLogout={logout}/>
+      <main>{children}</main>
     </>
-    
-    
   );
 }

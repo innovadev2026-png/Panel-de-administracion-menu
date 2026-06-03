@@ -1,29 +1,11 @@
-import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
+import { NextRequest } from "next/server";
+import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const cookie = req.headers.get("cookie") || "";
-    const token = cookie
-      .split("; ")
-      .find((c) => c.startsWith("token="))
-      ?.split("=")[1];
-
-    if (!token) {
-      return Response.json({ ok: false }, { status: 401 });
-    }
-
-    const decoded = await adminAuth.verifyIdToken(token);
-    const uid = decoded.uid;
-
-    const userDoc = await adminDb.collection("users").doc(uid).get();
-
-    if (!userDoc.exists || userDoc.data()?.role !== "SuperAdmin") {
-      return Response.json({ ok: false }, { status: 403 });
-    }
-
+    await requireSuperAdmin(req);
     return Response.json({ ok: true });
-
-  } catch {
-    return Response.json({ ok: false }, { status: 401 });
+  } catch (error) {
+    return authErrorResponse(error);
   }
 }
