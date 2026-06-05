@@ -1,10 +1,11 @@
 import { NextRequest } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
-import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
+import { authErrorResponse, requireAuthenticated } from "@/lib/serverAuth";
 
 export async function GET(req: NextRequest) {
   try {
-    const { uid } = await requireSuperAdmin(req);
+    const authenticatedUser = await requireAuthenticated(req);
+    const { uid } = authenticatedUser;
     const docSnap = await adminDb.collection("users").doc(uid).get();
 
     if (!docSnap.exists) {
@@ -17,7 +18,13 @@ export async function GET(req: NextRequest) {
     return Response.json({
       ok: true,
       uid,
-      data: docSnap.data(),
+      data: {
+        ...docSnap.data(),
+        role: authenticatedUser.role,
+        restaurantId: authenticatedUser.restaurantId,
+        permissions: authenticatedUser.permissions,
+        accesses: authenticatedUser.accesses,
+      },
     });
   } catch (error) {
     return authErrorResponse(error);

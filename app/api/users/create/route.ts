@@ -1,7 +1,12 @@
 import { NextRequest } from "next/server";
 import admin from "firebase-admin";
 import { adminDb, bucket } from "@/lib/firebaseAdmin";
-import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
+import {
+  assertRestaurantAccess,
+  authErrorResponse,
+  requirePermission,
+} from "@/lib/serverAuth";
+import { getRoleAccess } from "@/lib/userAccess";
 
 type FirebaseError = Error & {
   code?: string;
@@ -42,22 +47,42 @@ async function uploadUserImage(uid: string, file: File | null) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireSuperAdmin(req);
+    const authenticatedUser = await requirePermission(req, "users:manage");
 
     const formData = await req.formData();
     const name = getFormString(formData, "name");
     const email = getFormString(formData, "email");
     const password = getFormString(formData, "password");
     const role = getFormString(formData, "role") || "user";
+    const restaurantId = getFormString(formData, "restaurantId");
     const isActive = formData.get("isActive") === "true";
     const file = formData.get("image") as File | null;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !restaurantId) {
       return Response.json(
-        { ok: false, error: "Nombre, email y password son requeridos" },
+        {
+          ok: false,
+          error: "Nombre, email, password y restaurante son requeridos",
+        },
         { status: 400 }
       );
     }
+
+    const [restaurantSnap, access] = await Promise.all([
+      adminDb.collection("restaurants").doc(restaurantId).get(),
+      getRoleAccess(role),
+    ]);
+
+    assertRestaurantAccess(authenticatedUser, restaurantId);
+
+    if (!restaurantSnap.exists) {
+      return Response.json(
+        { ok: false, error: "Restaurante no encontrado" },
+        { status: 404 }
+      );
+    }
+
+    const restaurantName = restaurantSnap.data()?.name || "";
 
     const authUser = await admin.auth().createUser({
       displayName: name,
@@ -74,6 +99,10 @@ export async function POST(req: NextRequest) {
       name,
       email,
       role,
+      restaurantId,
+      restaurantName,
+      permissions: access.permissions,
+      accesses: access.accesses,
       image: imageUrl,
       isActive,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -81,7 +110,12 @@ export async function POST(req: NextRequest) {
 
     await Promise.all([
       adminDb.collection("users").doc(uid).set(user),
-      admin.auth().setCustomUserClaims(uid, { role }),
+      admin.auth().setCustomUserClaims(uid, {
+        role,
+        restaurantId,
+        permissions: access.permissions,
+        accesses: access.accesses,
+      }),
     ]);
 
     return Response.json({

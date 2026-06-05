@@ -44,7 +44,15 @@ export default function LoginPage() {
 
       const data = userSnap.data();
 
-      if (data.role !== "SuperAdmin") {
+      const accesses = Array.isArray(data.accesses) ? data.accesses : [];
+
+      const dashboardRoles = ["Admin", "Operador", "Owner"];
+
+      if (
+        data.role !== "SuperAdmin" &&
+        !accesses.includes("dashboard") &&
+        !dashboardRoles.includes(data.role)
+      ) {
         throw new Error("No autorizado");
       }
 

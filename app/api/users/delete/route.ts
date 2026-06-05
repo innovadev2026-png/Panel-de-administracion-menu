@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
 import admin from "firebase-admin";
 import { adminDb, bucket } from "@/lib/firebaseAdmin";
-import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
+import {
+  assertRestaurantAccess,
+  authErrorResponse,
+  requirePermission,
+} from "@/lib/serverAuth";
 
 function logRejectedCleanup(label: string, result: PromiseSettledResult<unknown>) {
   if (result.status === "rejected") {
@@ -19,7 +23,7 @@ async function deleteUserFiles(id: string) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    await requireSuperAdmin(req);
+    const authenticatedUser = await requirePermission(req, "users:manage");
 
     const { id } = await req.json();
 
@@ -38,6 +42,11 @@ export async function DELETE(req: NextRequest) {
         { ok: false, error: "Usuario no encontrado" },
         { status: 404 }
       );
+    }
+
+    const restaurantId = userSnap.data()?.restaurantId;
+    if (typeof restaurantId === "string") {
+      assertRestaurantAccess(authenticatedUser, restaurantId);
     }
 
     const [storageResult, authResult] = await Promise.allSettled([

@@ -1,7 +1,12 @@
 import { NextRequest } from "next/server";
 import admin from "firebase-admin";
 import { adminDb, bucket } from "@/lib/firebaseAdmin";
-import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
+import {
+  assertRestaurantAccess,
+  authErrorResponse,
+  requirePermission,
+} from "@/lib/serverAuth";
+import { getRoleAccess } from "@/lib/userAccess";
 
 function getFormString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -38,13 +43,14 @@ async function uploadUserImage(
 
 export async function PUT(req: NextRequest) {
   try {
-    await requireSuperAdmin(req);
+    const authenticatedUser = await requirePermission(req, "users:manage");
 
     const formData = await req.formData();
     const id = getFormString(formData, "id");
     const name = getFormString(formData, "name");
     const email = getFormString(formData, "email");
     const role = getFormString(formData, "role") || "user";
+    const restaurantId = getFormString(formData, "restaurantId");
     const isActive = formData.get("isActive") === "true";
     const currentImage = getFormString(formData, "currentImage");
     const file = formData.get("image") as File | null;
@@ -56,11 +62,37 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    if (!restaurantId) {
+      return Response.json(
+        { ok: false, error: "Restaurante requerido" },
+        { status: 400 }
+      );
+    }
+
+    const [restaurantSnap, access] = await Promise.all([
+      adminDb.collection("restaurants").doc(restaurantId).get(),
+      getRoleAccess(role),
+    ]);
+
+    assertRestaurantAccess(authenticatedUser, restaurantId);
+
+    if (!restaurantSnap.exists) {
+      return Response.json(
+        { ok: false, error: "Restaurante no encontrado" },
+        { status: 404 }
+      );
+    }
+
     const imageUrl = await uploadUserImage(id, currentImage, file);
+    const restaurantName = restaurantSnap.data()?.name || "";
     const updateData = {
       name,
       email,
       role,
+      restaurantId,
+      restaurantName,
+      permissions: access.permissions,
+      accesses: access.accesses,
       image: imageUrl,
       isActive,
       updatedAt: new Date(),
@@ -73,7 +105,12 @@ export async function PUT(req: NextRequest) {
         email,
         disabled: !isActive,
       }),
-      admin.auth().setCustomUserClaims(id, { role }),
+      admin.auth().setCustomUserClaims(id, {
+        role,
+        restaurantId,
+        permissions: access.permissions,
+        accesses: access.accesses,
+      }),
     ]);
 
     return Response.json({ ok: true });

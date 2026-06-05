@@ -10,6 +10,7 @@ import Avatar from "@/components/ui/Avatar/Avatar";
 import ColorInput from "@/components/ui/ColorInput/ColorInput";
 import Grid from "@/components/ui/Grid/Grid";
 import Modal from "@/components/ui/Modal/Modal";
+import { Alert } from "@/components/ui/Alert/Alert";
 
 type FirestoreTimestamp = {
   _seconds?: number;
@@ -72,6 +73,7 @@ export default function RestaurantsPage() {
   const [selected, setSelected] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<Restaurant | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const openModal = (restaurant: Restaurant) => {
     setSelected(restaurant);
@@ -178,6 +180,12 @@ export default function RestaurantsPage() {
       return;
     }
 
+    window.dispatchEvent(
+      new CustomEvent("restaurant-theme-updated", {
+        detail: form.settings?.colors,
+      })
+    );
+
     closeModal();
     fetchRestaurants();
   };
@@ -193,6 +201,42 @@ export default function RestaurantsPage() {
 
     fetchRestaurants();
     closeModal();
+  };
+
+  const handleDelete = async () => {
+    if (!selected?.id) return;
+
+    const confirmed = await Alert.confirm({
+      title: "Eliminar restaurante",
+      text: "El restaurante se movera a restaurant delete y se quitara de la lista activa.",
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+
+      const res = await fetch("/api/restaurants/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: selected.id }),
+      });
+      const data = await res.json();
+
+      if (!data.ok) {
+        Alert.error("Error", data.error || "No se pudo eliminar el restaurante");
+        return;
+      }
+
+      await fetchRestaurants();
+      closeModal();
+    } finally {
+      setDeleting(false);
+    }
   };
 
   useEffect(() => {
@@ -354,6 +398,16 @@ export default function RestaurantsPage() {
               onClick={() => toggleStatus(selected.id as string, form?.status)}
             >
               {form?.status === "active" ? "Deshabilitar" : "Activar"}
+            </Button>
+          )}
+
+          {selected?.id && (
+            <Button
+              variant="danger"
+              disabled={deleting}
+              onClick={handleDelete}
+            >
+              {deleting ? "Eliminando..." : "Eliminar"}
             </Button>
           )}
         </div>

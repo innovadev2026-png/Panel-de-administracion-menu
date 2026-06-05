@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { adminDb, bucket } from "@/lib/firebaseAdmin";
-import { authErrorResponse, requireSuperAdmin } from "@/lib/serverAuth";
+import {
+  assertRestaurantAccess,
+  authErrorResponse,
+  requirePermission,
+} from "@/lib/serverAuth";
 
 const DEFAULT_COLORS = {
   bg: "#121212",
@@ -61,7 +65,7 @@ async function uploadRestaurantImage(
 
 export async function POST(req: NextRequest) {
   try {
-    await requireSuperAdmin(req);
+    const user = await requirePermission(req, "restaurant:update");
 
     const formData = await req.formData();
     const id = getFormString(formData, "id");
@@ -72,6 +76,8 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    assertRestaurantAccess(user, id);
 
     const [logoUrl, coverImageUrl] = await Promise.all([
       uploadRestaurantImage(id, "logo", formData.get("logoFile") as File | null),

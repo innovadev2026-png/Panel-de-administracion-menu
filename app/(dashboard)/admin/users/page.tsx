@@ -11,6 +11,7 @@ import Input from "@/components/ui/Input/Input";
 import Select from "@/components/ui/Select/Select";
 import { Alert } from "@/components/ui/Alert/Alert";
 import Spinner from "@/components/ui/Spinner/Spinner";
+import { auth } from "@/lib/firebaseClient";
 import styles from "./users.module.css";
 
 type FirestoreTimestamp = {
@@ -18,6 +19,11 @@ type FirestoreTimestamp = {
 };
 
 type Role = {
+  id: string;
+  name: string;
+};
+
+type Restaurant = {
   id: string;
   name: string;
 };
@@ -33,6 +39,10 @@ type User = {
   image?: string;
   imageFile?: File | null;
   role?: string;
+  restaurantId?: string;
+  restaurantName?: string;
+  permissions?: string[];
+  accesses?: string[];
 };
 
 type CollectionResponse<T> = Record<string, Omit<T, "id">>;
@@ -41,7 +51,8 @@ const INITIAL_FORM: User = {
   name: "",
   email: "",
   password: "",
-  role: "user",
+  role: "Admin",
+  restaurantId: "",
   isActive: true,
   image: "",
   imageFile: null,
@@ -64,9 +75,20 @@ function toCollectionArray<T extends { id?: string }>(
   })) as Array<T & { id: string }>;
 }
 
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await auth.currentUser?.getIdToken();
+
+  return token
+    ? {
+        Authorization: `Bearer ${token}`,
+      }
+    : {};
+}
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
@@ -76,7 +98,9 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("/api/users/consult");
+      const res = await fetch("/api/users/consult", {
+        headers: await getAuthHeaders(),
+      });
       const data = await res.json();
       setUsers(toCollectionArray<User>(data));
     } catch (error) {
@@ -87,7 +111,9 @@ export default function UsersPage() {
 
   const fetchRoles = async () => {
     try {
-      const res = await fetch("/api/roles/consult");
+      const res = await fetch("/api/roles/consult", {
+        headers: await getAuthHeaders(),
+      });
       const data = await res.json();
       setRoles(toCollectionArray<Role>(data));
     } catch (error) {
@@ -96,11 +122,24 @@ export default function UsersPage() {
     }
   };
 
+  const fetchRestaurants = async () => {
+    try {
+      const res = await fetch("/api/restaurants/list", {
+        headers: await getAuthHeaders(),
+      });
+      const data = await res.json();
+      setRestaurants(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error(error);
+      setRestaurants([]);
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       try {
         setLoading(true);
-        await Promise.all([fetchUsers(), fetchRoles()]);
+        await Promise.all([fetchUsers(), fetchRoles(), fetchRestaurants()]);
       } finally {
         setLoading(false);
       }
@@ -162,6 +201,7 @@ export default function UsersPage() {
       }
 
       formData.append("role", form.role || "");
+      formData.append("restaurantId", form.restaurantId || "");
       formData.append("isActive", String(form.isActive));
 
       if (selected?.id) {
@@ -177,6 +217,7 @@ export default function UsersPage() {
       const method = selected ? "PUT" : "POST";
       const res = await fetch(endpoint, {
         method,
+        headers: await getAuthHeaders(),
         body: formData,
       });
       const data = await res.json();
@@ -209,6 +250,7 @@ export default function UsersPage() {
       const res = await fetch("/api/users/delete", {
         method: "DELETE",
         headers: {
+          ...(await getAuthHeaders()),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id }),
@@ -271,6 +313,7 @@ export default function UsersPage() {
                   <h3>{user.name}</h3>
                   <p>{user.email}</p>
                   <span className={styles.role}>{user.role}</span>
+                  {user.restaurantName && <p>{user.restaurantName}</p>}
                 </div>
               </div>
 
@@ -341,6 +384,24 @@ export default function UsersPage() {
               label: role.name,
               value: role.name,
             }))}
+          />
+
+          <Select
+            label="Restaurante"
+            value={form.restaurantId}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              handleChange("restaurantId", e.target.value)
+            }
+            options={[
+              {
+                label: "Selecciona un restaurante",
+                value: "",
+              },
+              ...restaurants.map((restaurant) => ({
+                label: restaurant.name,
+                value: restaurant.id,
+              })),
+            ]}
           />
 
           <Select
